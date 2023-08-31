@@ -1,0 +1,32 @@
+- name: Install shipping component
+  hosts: shipping
+  become: yes
+  tasks:
+  - name: Install Maven
+    ansible.builtin.yum:
+      name: maven 
+      state: installed
+  - name: check roboshop user exist or not
+    ansible.builtin.command: id roboshop
+    register: out
+    ignore_errors: true
+
+  - when: out.rc != 0
+    name: create roboshop user
+    ansible.builtin.user:
+      name: roboshop
+
+  - name: check /app directory exist or not
+    ansible.builtin.stat:
+      path: /app
+    register: directory
+
+  - name: print directory stat
+    ansible.builtin.debug: 
+      msg: "output: {{directory}}"
+
+  - when: directory.stat.exists == False
+    name: create /app directory
+    ansible.builtin.file:
+      path: /app
+      state: directory
